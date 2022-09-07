@@ -51,12 +51,8 @@ class MockVehicle(MagicMock):
 class TestTrackTestEnv(unittest.TestCase):
     _sut_class = TrackTestEnv
 
-    def setUp(self) -> None:
-        pass
-
-    def test_run(self):
+    def test_run_updates_waypoints_when_reached(self):
         # Arrange
-
         env = TrackTestEnv(params=TRACK_TEST_PARAM_SPACE_GYM.sample())
 
         # Act
