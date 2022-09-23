@@ -39,8 +39,6 @@ track_test_config = DEFAULT_TRACK_TEST_CONFIG
 # Set paths are required
 track_test_config['bng_config'] = BeamNGConfig(home="/SteamLibrary/steamapps/common/BeamNG.drive", 
                                                user="/path/to/beamng/user/workspace/from/setup/above")
-track_test_config['bng_config'] = BeamNGConfig(home="T:/SteamLibrary/steamapps/common/BeamNG.drive", 
-                                               user="C:/beamng_workspace")
 
 param_set = TRACK_TEST_PARAM_SPACE_GYM.sample()
 env = TrackTestEnv(params=param_set, config=track_test_config)
@@ -50,8 +48,9 @@ results, history = env.run()
 ## Running example script
 This script runs a number of tests using random car configurations and logs the results with MLflow.
 
+Update paths as required.
 ```bash
-python -m scripts.run_track_tests -N 5 --beamng_path T:/SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path C:/beamng_workspace
+python -m scripts.run_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
 The results and can be viewed using the MLflow UI.
