@@ -39,7 +39,7 @@ class TrackTestEnv(IEnv):
     """
     param_space: Space = TRACK_TEST_PARAM_SPACE_GYM
     _car_model = 'scintilla'
-    _car_spawn_pos = dict(pos=(-408.4, 260.23, 25.423), rot=(0, 0, -32.5))
+    _car_spawn_pos = dict(pos=(-408.4, 260.23, 25.423), rot_quat=(0, 0, -0.3, 1))
     _car_default_config = ScintillaRally()
     _wp1 = dict(name='quickrace_wp1', pos=[47., 256., 28.])
     _wp2 = dict(name='quickrace_wp2', pos=[393., -130., 34.])
@@ -123,9 +123,10 @@ class TrackTestEnv(IEnv):
             self._vehicle.ai_set_waypoint(waypoint=self._current_waypoint['name'])
 
         # Check if close enough to next waypoint yet
-        poll = self._vehicle.poll_sensors()
-        dist = self._euclidian_distance(pos_1=poll['state']['state']['pos'], pos_2=self._current_waypoint['pos'])
-        dist_to_finish = self._euclidian_distance(pos_1=poll['state']['state']['pos'],
+        self._vehicle.poll_sensors()
+        dist = self._euclidian_distance(pos_1=self._vehicle.sensors['state'].data['pos'],
+                                        pos_2=self._current_waypoint['pos'])
+        dist_to_finish = self._euclidian_distance(pos_1=self._vehicle.sensors['state'].data['pos'],
                                                   pos_2=self._route[-1]['pos'])
 
         if not (self._current_step % 20):
@@ -159,7 +160,7 @@ class TrackTestEnv(IEnv):
             self.done = True
             raise OutOfTimeException(f"{self._current_step}: Reached max time {self.config['max_time']}")
 
-        return poll, None, self.done, {}
+        return self._vehicle.sensors['state'].data, None, self.done, {}
 
     def run(self, modifiers: Optional[Dict[str, Iterable[Any]]] = None) -> Tuple[Dict[str, Any],
                                                                                  Dict[str, Sequence[Any]]]:
