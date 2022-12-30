@@ -74,5 +74,6 @@ The environments here are compatible with the following versions:
 
 | Beamng version | beamngpy version | beamng-envs version | Supported envs |
 |----------------|------------------|---------------------|----------------|
+| 0.27           | 1.25.1           | 0.3.0               | Track test     |
 | 0.26           | 1.24             | 0.2.0               | Track test     |
 | 0.24           | 1.22             | 0.1.0               | Track test     |

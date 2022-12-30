@@ -3,7 +3,9 @@ import warnings
 from typing import Optional, Dict, Iterable, Any, Tuple, List, Sequence
 
 import numpy as np
-from beamngpy import BeamNGpy, Scenario, Vehicle, State
+from beamngpy import BeamNGpy, Scenario, Vehicle
+from beamngpy.sensors import State
+from beamngpy.types import Float3
 from gym import Space
 
 from beamng_envs.beamng_config import BeamNGConfig
@@ -11,6 +13,7 @@ from beamng_envs.cars.scintilla_rally import ScintillaRally
 from beamng_envs.envs.track_test.track_test_config import DEFAULT_TRACK_TEST_CONFIG
 from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_SPACE_GYM
 from beamng_envs.interfaces.env import IEnv
+from beamng_envs.interfaces.types import WAYPOINT_TYPE
 
 
 class OutOfTimeException(Exception):
@@ -34,19 +37,19 @@ class TrackTestEnv(IEnv):
 
     TODO:
         - Switch time from Python -> BNG control
-        - Switch to using a lap config rather than manual checkpoint based route definition - it'll likely be simpler and
-          cause fewer odd behaviours in the AI.
+        - Switch to using a lap config rather than manual checkpoint based route definition - it'll likely be simpler
+          and cause fewer odd behaviours in the AI.
     """
     param_space: Space = TRACK_TEST_PARAM_SPACE_GYM
     _car_model = 'scintilla'
     _car_spawn_pos = dict(pos=(-408.4, 260.23, 25.423), rot_quat=(0, 0, -0.3, 1))
     _car_default_config = ScintillaRally()
-    _wp1 = dict(name='quickrace_wp1', pos=[47., 256., 28.])
-    _wp2 = dict(name='quickrace_wp2', pos=[393., -130., 34.])
-    _wp3 = dict(name='quickrace_wp3', pos=[-12., -65., 29.])
-    _wp4 = dict(name='quickrace_wp4', pos=[-220., 368., 27.])
-    _wp5 = dict(name='quickrace_wp11', pos=[-413., 467., 34.])
-    _wp6 = dict(name='hr_start', pos=[-402., 244., 25.])
+    _wp1: WAYPOINT_TYPE = dict(name='quickrace_wp1', pos=[47., 256., 28.])
+    _wp2: WAYPOINT_TYPE = dict(name='quickrace_wp2', pos=[393., -130., 34.])
+    _wp3: WAYPOINT_TYPE = dict(name='quickrace_wp3', pos=[-12., -65., 29.])
+    _wp4: WAYPOINT_TYPE = dict(name='quickrace_wp4', pos=[-220., 368., 27.])
+    _wp5: WAYPOINT_TYPE = dict(name='quickrace_wp11', pos=[-413., 467., 34.])
+    _wp6: WAYPOINT_TYPE = dict(name='hr_start', pos=[-402., 244., 25.])
 
     _bng: Optional[BeamNGpy] = None
     _scenario: Scenario
@@ -66,7 +69,7 @@ class TrackTestEnv(IEnv):
         self.config: Dict[str, Any] = config
         self._bng = None
         # Route over short tack - start line (spawn point) to start line
-        self._route = [self._wp1, self._wp2, self._wp3, self._wp4, self._wp5, self._wp6]
+        self._route: List[WAYPOINT_TYPE] = [self._wp1, self._wp2, self._wp3, self._wp4, self._wp5, self._wp6]
         # Used to keep the car racing over the finish line, rather than try to stop on it.
         self._final_waypoint = self._wp1
 
@@ -81,6 +84,7 @@ class TrackTestEnv(IEnv):
         if self._bng is not None:
             self._bng.close()
             self._bng = None
+            time.sleep(1)
 
     def _start_scenario(self):
         self._scenario = Scenario('hirochi_raceway', "start_line")
@@ -95,7 +99,8 @@ class TrackTestEnv(IEnv):
         pc['vars'].update({k: float(v) for k, v in self.params.items() if k.startswith('$')})
 
         self._vehicle.set_part_config(pc)
-        self._vehicle.attach_sensor("state", State())
+        self._vehicle.sensors.attach("state", State())
+        self._bng.switch_vehicle('scintilla')
 
     def _set_driver_config(self):
         self._vehicle.ai_set_mode('manual')
@@ -103,7 +108,7 @@ class TrackTestEnv(IEnv):
         self._vehicle.ai_set_speed(500, mode='limit')
 
     @staticmethod
-    def _euclidian_distance(pos_1: List[float], pos_2: List[float]) -> float:
+    def _euclidian_distance(pos_1: Float3, pos_2: Float3) -> float:
         return np.sqrt(np.sum((np.array(pos_1) - np.array(pos_2)) ** 2))
 
     def step(self, action: Optional[int] = None, **kwargs) -> Tuple[Optional[Any], Optional[float],
@@ -123,10 +128,10 @@ class TrackTestEnv(IEnv):
             self._vehicle.ai_set_waypoint(waypoint=self._current_waypoint['name'])
 
         # Check if close enough to next waypoint yet
-        self._vehicle.poll_sensors()
-        dist = self._euclidian_distance(pos_1=self._vehicle.sensors['state'].data['pos'],
+        self._vehicle.sensors.poll()
+        dist = self._euclidian_distance(pos_1=self._vehicle.state['pos'],
                                         pos_2=self._current_waypoint['pos'])
-        dist_to_finish = self._euclidian_distance(pos_1=self._vehicle.sensors['state'].data['pos'],
+        dist_to_finish = self._euclidian_distance(pos_1=self._vehicle.state['pos'],
                                                   pos_2=self._route[-1]['pos'])
 
         if not (self._current_step % 20):
