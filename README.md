@@ -37,7 +37,7 @@ from beamng_envs.envs.track_test.track_test_env import TrackTestEnv
 
 track_test_config = DEFAULT_TRACK_TEST_CONFIG
 # Set paths are required
-track_test_config['bng_config'] = BeamNGConfig(home="/SteamLibrary/steamapps/common/BeamNG.drive", 
+track_test_config['bng_config'] = BeamNGConfig(home="/SteamLibrary/steamapps/common/BeamNG.drive",
                                                user="/path/to/beamng/user/workspace/from/setup/above")
 
 param_set = TRACK_TEST_PARAM_SPACE_GYM.sample()
@@ -46,17 +46,33 @@ results, history = env.run()
 ````
 
 ## Running example script
+
 This script runs a number of tests using random car configurations and logs the results with MLflow.
 
 Update paths as required.
+
 ```bash
 python -m scripts.run_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
 The results and can be viewed using the MLflow UI.
+
 ```bash
 mlflow ui -h 0.0.0.0 -p 5555
 ```
-http://0.0.0.0:5555 
+
+http://0.0.0.0:5555
 
 ![MLflow UI example](images/mlflow_example.png)
+
+# Compatibility
+
+Each version of the Beamng python api supports specific versions of Beamng -
+see https://github.com/BeamNG/BeamNGpy#compatibility
+
+The environments here are compatible with the following versions:
+
+| Beamng version | beamngpy version | beamng-envs version | Supported envs |
+|----------------|------------------|---------------------|----------------|
+| 0.26           | 1.24             | 0.2.0               | Track test     |
+| 0.24           | 1.22             | 0.1.0               | Track test     |

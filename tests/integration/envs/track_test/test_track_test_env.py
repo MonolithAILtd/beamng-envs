@@ -1,5 +1,5 @@
 import unittest
-from typing import List
+from typing import List, Dict, Any
 from unittest.mock import MagicMock, patch
 
 from beamng_envs.envs.track_test.track_test_config import DEFAULT_TRACK_TEST_CONFIG
@@ -7,9 +7,14 @@ from beamng_envs.envs.track_test.track_test_env import TrackTestEnv, OutOfTimeEx
 from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_SPACE_GYM
 
 
+class MockSensor(MagicMock):
+    data: Dict[str, Any]
+
+
 class MockVehicle(MagicMock):
     _step: int = 0
     _loc: List[float]
+    sensors: Dict[str, MockSensor]
 
     def _set_loc(self):
         if self._step == 0:
@@ -30,18 +35,14 @@ class MockVehicle(MagicMock):
     def poll_sensors(self):
         self._set_loc()
         self._step += 1
-
-        return {
-            'state': {
-                'type': 'VehicleUpdate',
-                'state': {
-                    'rotation': [0, 0, 0],
-                    'front': [0, 0, 0],
-                    'vel': [0, 0, 0],
-                    'up': [0, 0, 0],
-                    'dir': [0, 0, 0],
-                    'pos': self._loc}
-            }
+        self.sensors = {'state': MockSensor()}
+        self.sensors['state'].data = {
+            'rotation': [0, 0, 0],
+            'front': [0, 0, 0],
+            'vel': [0, 0, 0],
+            'up': [0, 0, 0],
+            'dir': [0, 0, 0],
+            'pos': self._loc
         }
 
 

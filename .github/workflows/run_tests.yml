@@ -8,6 +8,7 @@ on:
 
 jobs:
   Tests:
+    environment: CI
     timeout-minutes: 5
     runs-on: ubuntu-latest
     strategy:
@@ -47,10 +48,6 @@ jobs:
           pip install pytest coverage
           coverage run --source=. -m pytest
           coverage xml --omit "scripts/*" -o coverage-reports/coverage-.xml
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   Release:
     timeout-minutes: 10
