@@ -11,10 +11,10 @@ class MockSensor(MagicMock):
     data: Dict[str, Any]
 
 
-class MockVehicle(MagicMock):
+class MockSensors(MagicMock):
+    sensors: Dict[str, MockSensor]
     _step: int = 0
     _loc: List[float]
-    sensors: Dict[str, MockSensor]
 
     def _set_loc(self):
         if self._step == 0:
@@ -32,7 +32,7 @@ class MockVehicle(MagicMock):
         if self._step == 12:
             self._loc = [-402., 244., 25.]
 
-    def poll_sensors(self):
+    def poll(self) -> None:
         self._set_loc()
         self._step += 1
         self.sensors = {'state': MockSensor()}
@@ -44,6 +44,14 @@ class MockVehicle(MagicMock):
             'dir': [0, 0, 0],
             'pos': self._loc
         }
+
+
+class MockVehicle(MagicMock):
+    sensors = MockSensors()
+
+    @property
+    def state(self) -> Dict[str, Any]:
+        return self.sensors.sensors['state'].data
 
 
 @patch('beamng_envs.envs.track_test.track_test_env.BeamNGpy', MagicMock())
