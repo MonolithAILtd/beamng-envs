@@ -8,6 +8,7 @@ on:
 
 jobs:
   Tests:
+    environment: CI
     timeout-minutes: 5
     runs-on: ubuntu-latest
     strategy:
