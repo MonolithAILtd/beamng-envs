@@ -50,8 +50,6 @@ jobs:
           coverage xml --omit "scripts/*" -o coverage-reports/coverage-.xml
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   Release:
     timeout-minutes: 10
