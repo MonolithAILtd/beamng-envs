@@ -1,6 +1,8 @@
 # Changelog
 
-<!--next-version-placeholder-->
+## v0.2.0 (2022-12-30)
+### Feature
+* Update to beamngpy==1.24; update sensor polling and vehicle spawn rotation
 
 ## v0.1.0 (2022-09-21)
 ### Feature
