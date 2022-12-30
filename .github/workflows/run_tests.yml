@@ -48,10 +48,6 @@ jobs:
           pip install pytest coverage
           coverage run --source=. -m pytest
           coverage xml --omit "scripts/*" -o coverage-reports/coverage-.xml
-      - name: SonarCloud Scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        uses: SonarSource/sonarcloud-github-action@master
 
   Release:
     timeout-minutes: 10
