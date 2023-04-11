@@ -14,10 +14,12 @@ from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--beamng_path", type=str, default='/path/to/beamng', help="Path to the beamng executable.")
-    parser.add_argument("--beamng_user_path", type=str, default='/beamng_workspace/',
+    parser.add_argument("--beamng_path", type=str, default='T:/SteamLibrary/steamapps/common/BeamNG.drive',
+                        help="Path to the beamng executable.")
+    parser.add_argument("--beamng_user_path", type=str, default='C:/beamng_workspace/',
                         help="Path to the set-up user workspace.")
     parser.add_argument("-N", type=int, default=5, help="The number of tests with randomly selected car setups to run.")
+    parser.add_argument("--output_path", type=str, default='./track_test_results', help="Output path for results")
     opt = parser.parse_args()
 
     # Setup Python logging to include BeamNG console output
@@ -47,6 +49,7 @@ if __name__ == "__main__":
                 params.update({'version': __VERSION__})
                 mlflow.log_params(params)
                 mlflow.log_metrics(results)
+                mlflow.log_artifacts(env.disk_results.output_path)
 
             except IndexError as e:
                 # Depending on the specific setup of the TrackTestEnv, there's a small chance the car will overshoot

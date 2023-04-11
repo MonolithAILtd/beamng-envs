@@ -11,8 +11,8 @@ try:
 except FileNotFoundError:
     long_description = ''
 
-REQS_CORE = ["beamngpy==1.25.1", "numpy==1.24.1", "gym==0.26.2"]
-RES_FULL = ["mlflow==2.1.1", "tqdm==4.64.1"]
+REQS_CORE = ["beamngpy>=1.26.0", "numpy", "gym", "pandas"]
+RES_FULL = ["mlflow", "tqdm"]
 
 setuptools.setup(
     name="beamng_envs",
