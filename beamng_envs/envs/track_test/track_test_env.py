@@ -1,16 +1,20 @@
+import copy
+import os
 import time
+import uuid
 import warnings
 from typing import Optional, Dict, Iterable, Any, Tuple, List, Sequence
 
 import numpy as np
 from beamngpy import BeamNGpy, Scenario, Vehicle
-from beamngpy.sensors import State
+from beamngpy.sensors import State, Electrics, GForces, Damage, Sensor
 from beamngpy.types import Float3
 from gym import Space
 
 from beamng_envs.beamng_config import BeamNGConfig
 from beamng_envs.cars.scintilla_rally import ScintillaRally
 from beamng_envs.envs.track_test.track_test_config import DEFAULT_TRACK_TEST_CONFIG
+from beamng_envs.envs.track_test.track_test_disk_results import TrackTestDiskResults
 from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_SPACE_GYM
 from beamng_envs.interfaces.env import IEnv
 from beamng_envs.interfaces.types import WAYPOINT_TYPE
@@ -24,7 +28,7 @@ class TrackTestEnv(IEnv):
     """
     Prototype track test environment.
 
-    Loads the Scintilla rally car, exposes some of the part variables in the parameter space. The same parts are always
+    Loads the Scintilla rally car, exposes some part variables in the parameter space. The same parts are always
     used, but their settings can be changed.
 
     Runs a lap of part of the Hirochi Raceway circuit by setting checkpoints as the car nears them. It uses the inbuilt
@@ -59,9 +63,11 @@ class TrackTestEnv(IEnv):
     _current_time: float
     _start_time: float
     _current_step: int
+    _sensors = Dict[str, Sensor]
     done: bool
     results: Dict[str, Any]
     history: Dict[str, List[Any]]
+    disk_results: Optional[TrackTestDiskResults]
 
     def __init__(self, params: Dict[str, Any], config: Dict[str, Any] = DEFAULT_TRACK_TEST_CONFIG):
 
@@ -72,6 +78,12 @@ class TrackTestEnv(IEnv):
         self._route: List[WAYPOINT_TYPE] = [self._wp1, self._wp2, self._wp3, self._wp4, self._wp5, self._wp6]
         # Used to keep the car racing over the finish line, rather than try to stop on it.
         self._final_waypoint = self._wp1
+        # This path is relative to the BNG user dir
+        self._bng_logs_path = os.path.join(self.__class__.__name__, str(uuid.uuid4()))
+        self.disk_results = None
+
+        self._time_key = 'time_s'
+        self._car_state_key = 'car_state'
 
         self._soft_reset()
 
@@ -93,14 +105,19 @@ class TrackTestEnv(IEnv):
         self._scenario.make(self._bng)
         self._bng.load_scenario(self._scenario)
         self._bng.start_scenario()
+        self._bng.set_steps_per_second(self.config['fps'])
+        self._bng.change_setting()
+        self._bng.apply_graphics_setting()
 
     def _set_vehicle_config(self):
         pc = self._car_default_config.config.copy()
         pc['vars'].update({k: float(v) for k, v in self.params.items() if k.startswith('$')})
 
         self._vehicle.set_part_config(pc)
-        self._vehicle.sensors.attach("state", State())
+        for sensor_name, sensor in self._sensors.items():
+            self._vehicle.sensors.attach(sensor_name, sensor)
         self._bng.switch_vehicle('scintilla')
+        self._vehicle.start_in_game_logging(output_dir=self._bng_logs_path)
 
     def _set_driver_config(self):
         self._vehicle.ai_set_mode('manual')
@@ -129,6 +146,7 @@ class TrackTestEnv(IEnv):
 
         # Check if close enough to next waypoint yet
         self._vehicle.sensors.poll()
+        sensor_data = copy.deepcopy({k: self._vehicle.sensors[k].data for k in self._sensors.keys()})
         dist = self._euclidian_distance(pos_1=self._vehicle.state['pos'],
                                         pos_2=self._current_waypoint['pos'])
         dist_to_finish = self._euclidian_distance(pos_1=self._vehicle.state['pos'],
@@ -165,14 +183,15 @@ class TrackTestEnv(IEnv):
             self.done = True
             raise OutOfTimeException(f"{self._current_step}: Reached max time {self.config['max_time']}")
 
-        return self._vehicle.sensors['state'].data, None, self.done, {}
+        return sensor_data, None, self.done, {}
 
     def run(self, modifiers: Optional[Dict[str, Iterable[Any]]] = None) -> Tuple[Dict[str, Any],
                                                                                  Dict[str, Sequence[Any]]]:
         try:
             while not self.done:
                 obs, _, done, _ = self.step()
-                self.history["car_state"].append(obs)
+                self.history[self._car_state_key].append(obs)
+                self.history[self._time_key].append(self._current_time)
                 time.sleep(0.01)
         except OutOfTimeException as te:
             if self.config.get('error_on_out_of_time', False):
@@ -183,10 +202,25 @@ class TrackTestEnv(IEnv):
         else:
             finished = 1
         finally:
+            self._vehicle.stop_in_game_logging()
             self.close()
 
-        self.results = {'lap_time': self._current_time, 'finished': finished}
+        self.results = {
+            'lap_time': self._current_time,
+            'finished': finished
+        }
         print(f'Lap time: {np.round(self.results["lap_time"], 3)} s')
+
+        self.disk_results = TrackTestDiskResults(
+            path=self.config['output_path'],
+            params=self.params,
+            config=self.config,
+            history=self.history,
+            path_to_bng_logs=self._bng_logs_path,
+            results=self.results,
+        )
+        self.disk_results.save()
+
         return self.results, self.history
 
     def reset(self):
@@ -198,12 +232,18 @@ class TrackTestEnv(IEnv):
         self._soft_reset()
 
     def _soft_reset(self):
+        self._sensors = dict(
+            state=State(),
+            electrics=Electrics(),
+            g_forces=GForces(),
+            damage=Damage()
+        )
         self.done = False
         self._current_step = 0
         self._current_waypoint_idx = 0
         self._current_waypoint = self._route[self._current_waypoint_idx]
         self._current_time = 0.0
         self._route_done = [False] * len(self._route)
-        self.history = {'car_state': []}
+        self.history = {self._car_state_key: [], self._time_key: []}
         self.results = {}
         self._start_time = time.time()
