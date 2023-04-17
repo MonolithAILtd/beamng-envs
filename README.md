@@ -52,7 +52,7 @@ This script runs a number of tests using random car configurations and logs the 
 Update paths as required.
 
 ```bash
-python -m scripts.run_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
+python -m scripts.run_batch_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
 The results and can be viewed using the MLflow UI.
@@ -74,6 +74,7 @@ The environments here are compatible with the following versions:
 
 | Beamng version | beamngpy version | beamng-envs version | Supported envs |
 |----------------|------------------|---------------------|----------------|
+| 0.28           | 1.26             | 0.3.0 - 0.4.0       | Track test     |
 | 0.27           | 1.25.1           | 0.3.0               | Track test     |
 | 0.26           | 1.24             | 0.2.0               | Track test     |
 | 0.24           | 1.22             | 0.1.0               | Track test     |
