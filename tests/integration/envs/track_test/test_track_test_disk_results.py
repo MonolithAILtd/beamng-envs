@@ -33,7 +33,7 @@ class TestTrackTestDisResultsEnv(unittest.TestCase):
         config = DEFAULT_TRACK_TEST_CONFIG
         config["output_path"] = self._tmp_dir.name
         env = TrackTestEnv(params=TRACK_TEST_PARAM_SPACE_GYM.sample(), config=config)
-        results, history = env.run()
+        env.run()
         # There are 13 steps returned by the run with the mocked sensors
         expected_n_steps = 13
         # There are currently 23 items saved in the scalars from config/params/results, etc.
