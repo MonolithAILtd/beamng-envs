@@ -52,7 +52,7 @@ This script runs a number of tests using random car configurations and logs the 
 Update paths as required.
 
 ```bash
-python -m scripts.run_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
+python -m scripts.run_batch_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
 The results and can be viewed using the MLflow UI.

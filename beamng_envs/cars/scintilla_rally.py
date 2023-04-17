@@ -4,9 +4,7 @@ from typing import Any, Dict
 class ScintillaRally:
     @property
     def config(self) -> Dict[str, Any]:
-        return {"parts": self.parts,
-                "vars": self.vars,
-                "paints": self.paints}
+        return {"parts": self.parts, "vars": self.vars, "paints": self.paints}
 
     config_filename = "vehicles/scintilla/rally.pc"
     parts = {
@@ -129,7 +127,8 @@ class ScintillaRally:
         "race_seat_FR": "race_seat_FR",
         "scintilla_finaldrive_R": "scintilla_finaldrive_R_race",
         "tire_F_18x9": "tire_F_245_40_18_tarmac",
-        "scintilla_flashers": "", "race_seat_FL": "race_seat_FL",
+        "scintilla_flashers": "",
+        "race_seat_FL": "race_seat_FL",
         "scintilla_fueltank_L": "scintilla_fueltank_L",
         "scintilla_fueltank_R": "scintilla_fueltank_R",
         "scintilla_gauges": "scintilla_gauges",
@@ -157,18 +156,17 @@ class ScintillaRally:
         "scintilla_lip_F": "scintilla_lip_F",
         "digidash_cells_top_left_widget": "digidash_cells_top_left_wheelPressure",
         "scintilla_mirror_R": "scintilla_mirror_R",
-        "scintilla_mod": ""}
+        "scintilla_mod": "",
+    }
     vars = {
         # Brakes
         "$brakestrength": 1,  # Brake force multiplier 60-100%
         "$brakebias": 0.55,  # Front/rear brake bias 0-100%
-
         # Chassis
         "$ffbstrength": 1,  # Setup-specific force feedback multiplier @100% 50-150
         "$spoiler_angle_R": 10,  # Rear wing angle, degrees 8-20
         "$fuel_R": 40,  # Right fuel volume L 0-40
         "$fuel_L": 40,  # Left fuel volume L 0-40
-
         # Differentials
         "$lsdpreload_F": 100,  # Pre-load torque N/m 0-500
         "$lsdlockcoefrev_F": 0,  # Coast lock rate % 0-100
@@ -178,7 +176,6 @@ class ScintillaRally:
         "$lsdlockcoef_R": 0.15,  # Power lock rate @ 37% 0-100
         "$lsdlockcoefrev_R": 0,  # Coast lock rate % 0-100
         "$finaldrive_R": 4.01,  # Final drive gear ratio 2-6
-
         # Wheel alignment
         "$camber_F": 0.975,  # Camber @ -50%
         "$camber_R": 0.965,  # Camber @ -70%  -100-100
@@ -186,7 +183,6 @@ class ScintillaRally:
         "$toe_F": 0.9796,  # @ 68%  -100-100
         "$toe_R": 0.984,  # @ -32%  -100-100
         "$steer_center_F": 0,  # Toe left/right trim @0% 0-100 (range -0.002-0.002)
-
         # Transaxle
         "$gear_1": 2.99,
         "$gear_2": 2.23,
@@ -195,11 +191,9 @@ class ScintillaRally:
         "$gear_5": 1.23,
         "$gear_6": 0.96,
         "$gear_R": 2.85,
-
         # Engine
         "$revLimiterCutTime": 0.1,  # RPM limit cut time s 0.01-0.5
         "$revLimiterRPM": 8350,  # RPM limit, 4500-10500
-
         # Suspension
         "$arb_spring_F": 75000,  # Ant-roll spring rate N/m 30000-150000
         "$spring_F_rally": 105000,  # Spring rate N/m 50000-200000
@@ -215,13 +209,11 @@ class ScintillaRally:
         "$damp_rebound_R_fast_rally": 22000,  # Fast rebound damping N/m/s 4500-25000
         "$damp_rebound_R_rally": 22000,  # Rebound damping N/m/s 4500-25000
         "$damp_bump_R_rally": 12500,  # Bump damping N/m/s 2500-15000
-
         # Wheels
         "$tirepressure_F": 28,  # Tire pressure psi 0-50
         "$trackoffset_F": -0.01,  # Wheel offset m -0.01-0.05
         "$tirepressure_R": 27,  # Tire pressure psi 0-50
         "$trackoffset_R": 0.025,  # Wheel offset m -0.01-0.05
-
         # Transfer case
         "$splitshaft_minlock": 0,  # Minimum lock % 0-20%
         "$splitshaft_torque": 600,  # Maximum torque N-m 0-1000
@@ -234,20 +226,20 @@ class ScintillaRally:
             "clearcoat": 0.77,
             "clearcoatRoughness": 0.03,
             "baseColor": [0.88, 0, 0, 2],
-            "metallic": 0.86
+            "metallic": 0.86,
         },
         {
             "roughness": 0.36,
             "clearcoat": 0.77,
             "clearcoatRoughness": 0.03,
             "baseColor": [0.65, 0.65, 0.65, 1.2],
-            "metallic": 0.86
+            "metallic": 0.86,
         },
         {
             "roughness": 0.36,
             "clearcoat": 0.77,
             "clearcoatRoughness": 0.03,
             "baseColor": [1, 0.69, 0.03, 1.2],
-            "metallic": 0.86
-        }
+            "metallic": 0.86,
+        },
     ]

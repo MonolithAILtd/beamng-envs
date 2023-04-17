@@ -1,1 +1,3 @@
-__VERSION__ = "0.3.0"
+__VERSION__ = "0.4.0"
+__BNG_VERSION__ = "0.28"
+__BNG_PY_VERSION__ = "0.26.0"

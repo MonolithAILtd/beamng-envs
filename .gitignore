@@ -4,6 +4,7 @@ coverage-reports/
 mlruns/
 outputs/
 log.txt
+track_test_results/
 
 
 # Byte-compiled / optimized / DLL files

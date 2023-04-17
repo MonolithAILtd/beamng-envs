@@ -27,6 +27,7 @@ class IEnv(abc.ABC):
      - results: A dict containing any summary results available after the environment reaches completion (if any).
      - complete: Bool indicating if the environment has reached a completed state and will not iterate further.
     """
+
     config: Dict[str, Any]
     param_space: Space
     observation_space: Space
@@ -39,8 +40,9 @@ class IEnv(abc.ABC):
     def __init__(self, params: Dict[str, Any], config: Dict[str, Any]):
         """Ready environment for use."""
 
-    def step(self, action: Optional[int] = None, **kwargs) -> Tuple[Optional[Any], Optional[float],
-                                                                    bool, Dict[str, Any]]:
+    def step(
+        self, action: Optional[int] = None, **kwargs
+    ) -> Tuple[Optional[Any], Optional[float], bool, Dict[str, Any]]:
         """
         Iterate the environment by a single frame/step, if supported by the environment.
 
@@ -58,8 +60,9 @@ class IEnv(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def run(self,
-            modifiers: Optional[Dict[str, Iterable[Any]]] = None) -> Tuple[Dict[str, Any], Dict[str, List[Any]]]:
+    def run(
+        self, modifiers: Optional[Dict[str, Iterable[Any]]] = None
+    ) -> Tuple[Dict[str, Any], Dict[str, List[Any]]]:
         """
         Run the environment to completion.
 
