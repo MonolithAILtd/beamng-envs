@@ -11,7 +11,6 @@ python -m scripts run_single_track_test --beamng_path '' --beamng_user_path ''
 ````
 
 """
-import argparse
 from typing import Optional
 
 import beamngpy
@@ -20,14 +19,12 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
-from beamng_envs import __VERSION__
 from beamng_envs.beamng_config import BeamNGConfig
-from beamng_envs.envs.track_test.track_test_config import DEFAULT_TRACK_TEST_CONFIG
-from beamng_envs.envs.track_test.track_test_disk_results import TrackTestDiskResults
+from beamng_envs.data.disk_results import DiskResults
+from beamng_envs.envs.track_test.track_test_config import TrackTestConfig
 from beamng_envs.envs.track_test.track_test_env import TrackTestEnv
-from beamng_envs.envs.track_test.track_test_param_space import (
-    TRACK_TEST_PARAM_SPACE_GYM,
-)
+from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_SPACE_GYM
+from scripts.args_batch import PARSER_BATCH
 
 
 def plot_track(ts_df: pd.DataFrame, filename: Optional[str] = None):
@@ -43,13 +40,13 @@ def plot_track(ts_df: pd.DataFrame, filename: Optional[str] = None):
     ).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
     velocity = (
-        np.sqrt(
-            ts_df["state_vel_0"] ** 2
-            + ts_df["state_vel_1"] ** 2
-            + ts_df["state_vel_2"] ** 2
-        )
-        * 3.6
-    ).values[1::]
+                       np.sqrt(
+                           ts_df["state_vel_0"] ** 2
+                           + ts_df["state_vel_1"] ** 2
+                           + ts_df["state_vel_2"] ** 2
+                       )
+                       * 3.6
+               ).values[1::]
     norm = plt.Normalize(0, 300)
     lc = LineCollection(segments, cmap="inferno", norm=norm)
     lc.set_array(velocity)
@@ -85,35 +82,20 @@ def plot_track(ts_df: pd.DataFrame, filename: Optional[str] = None):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--beamng_path",
-        type=str,
-        default="T:/SteamLibrary/steamapps/common/BeamNG.drive",
-        help="Path to the beamng executable.",
-    )
-    parser.add_argument(
-        "--beamng_user_path",
-        type=str,
-        default="C:/beamng_workspace/",
-        help="Path to the set-up user workspace.",
-    )
-    parser.add_argument(
-        "--output_path",
-        type=str,
-        default=f"./track_test_results_v{__VERSION__}",
-        help="Output path for results",
-    )
-    opt = parser.parse_args()
+    opt = PARSER_BATCH.parse_args()
 
     # Setup Python logging to include BeamNG console output
     beamngpy.set_up_simple_logging()
 
     # Prepare config
-    track_test_config = DEFAULT_TRACK_TEST_CONFIG
-    track_test_config["output_path"] = opt.output_path
-    track_test_config["bng_config"] = BeamNGConfig(
-        home=opt.beamng_path, user=opt.beamng_user_path
+    # The BeamngConfig can be specified here, and will be used to create a game instance if the env isn't passed an
+    # existing one.
+    track_test_config = TrackTestConfig(
+        output_path=opt.output_path,
+        bng_config=BeamNGConfig(
+            home=opt.beamng_path,
+            user=opt.beamng_user_path
+        )
     )
 
     # Sample a single set of parameters
@@ -126,7 +108,7 @@ if __name__ == "__main__":
     results, history = env.run()
 
     # Previous results can also be reloaded from disk (these are also available in current runs in env.disk_results)
-    full_results = TrackTestDiskResults.load(path=env.disk_results.output_path)
+    full_results = DiskResults.load(path=env.disk_results.output_path)
 
     # Get the tabulated results
     timeseries_df = full_results.ts_df

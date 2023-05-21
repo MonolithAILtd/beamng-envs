@@ -4,7 +4,11 @@ coverage-reports/
 mlruns/
 outputs/
 log.txt
-track_test_results/
+track_test_results*/
+drag_strip_results*/
+crash_test_results*/
+cars_and_configs/
+datasets/
 
 
 # Byte-compiled / optimized / DLL files
