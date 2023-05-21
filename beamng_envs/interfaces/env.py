@@ -3,6 +3,8 @@ from typing import Dict, Any, Iterable, Tuple, Optional, List
 
 from gym import Space
 
+from beamng_envs.envs.base.default_config import DefaultConfig
+
 
 class IEnv(abc.ABC):
     """
@@ -28,7 +30,7 @@ class IEnv(abc.ABC):
      - complete: Bool indicating if the environment has reached a completed state and will not iterate further.
     """
 
-    config: Dict[str, Any]
+    config: DefaultConfig
     param_space: Space
     observation_space: Space
     action_space: Optional[Space]
@@ -37,7 +39,7 @@ class IEnv(abc.ABC):
     complete: bool
 
     @abc.abstractmethod
-    def __init__(self, params: Dict[str, Any], config: Dict[str, Any]):
+    def __init__(self, params: Dict[str, Any], config: DefaultConfig):
         """Ready environment for use."""
 
     def step(

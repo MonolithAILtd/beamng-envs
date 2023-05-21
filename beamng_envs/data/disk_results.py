@@ -12,9 +12,10 @@ from typing import Union, Dict, Any, Optional
 import pandas as pd
 
 from beamng_envs import __VERSION__, __BNG_VERSION__
+from beamng_envs.data.nd_array_json_encoder import NDArrayJSONEncoder
 
 
-class TrackTestDiskResults:
+class DiskResults:
     """
     Class to handle saving and loading TrackTestEnv results to and from disk
 
@@ -72,7 +73,9 @@ class TrackTestDiskResults:
         with open(os.path.join(self.output_path, self._bng_config_fn), "w") as f:
             json.dump(self.config["bng_config"].__dict__, f)
         with open(os.path.join(self.output_path, "params.json"), "w") as f:
-            json.dump({k: float(v) for k, v in self.params.items()}, f)
+            json.dump(
+                obj={k: v for k, v in self.params.items()}, fp=f, cls=NDArrayJSONEncoder
+            )
         with open(os.path.join(self.output_path, "config.json"), "w") as f:
             json.dump(
                 {k: v for k, v in self.config.items() if k not in ["bng_config"]}, f
@@ -132,6 +135,9 @@ class TrackTestDiskResults:
 
     @property
     def scalars_series(self) -> pd.Series:
+        """
+        pd.Series containing scalar values for run.
+        """
         if self._scalars_series is None:
             self._scalars_series = self._get_scalars_series()
 
