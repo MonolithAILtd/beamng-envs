@@ -19,11 +19,13 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from matplotlib.collections import LineCollection
 
-from beamng_envs.beamng_config import BeamNGConfig
+from beamng_envs.bng_sim.beamngpy_config import BeamNGPyConfig
 from beamng_envs.data.disk_results import DiskResults
 from beamng_envs.envs.track_test.track_test_config import TrackTestConfig
 from beamng_envs.envs.track_test.track_test_env import TrackTestEnv
-from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_SPACE_GYM
+from beamng_envs.envs.track_test.track_test_param_space import (
+    TRACK_TEST_PARAM_SPACE_GYM,
+)
 from scripts.args_batch import PARSER_BATCH
 
 
@@ -40,13 +42,13 @@ def plot_track(ts_df: pd.DataFrame, filename: Optional[str] = None):
     ).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
     velocity = (
-                       np.sqrt(
-                           ts_df["state_vel_0"] ** 2
-                           + ts_df["state_vel_1"] ** 2
-                           + ts_df["state_vel_2"] ** 2
-                       )
-                       * 3.6
-               ).values[1::]
+        np.sqrt(
+            ts_df["state_vel_0"] ** 2
+            + ts_df["state_vel_1"] ** 2
+            + ts_df["state_vel_2"] ** 2
+        )
+        * 3.6
+    ).values[1::]
     norm = plt.Normalize(0, 300)
     lc = LineCollection(segments, cmap="inferno", norm=norm)
     lc.set_array(velocity)
@@ -91,11 +93,9 @@ if __name__ == "__main__":
     # The BeamngConfig can be specified here, and will be used to create a game instance if the env isn't passed an
     # existing one.
     track_test_config = TrackTestConfig(
+        close_on_done=True,
         output_path=opt.output_path,
-        bng_config=BeamNGConfig(
-            home=opt.beamng_path,
-            user=opt.beamng_user_path
-        )
+        bng_config=BeamNGPyConfig(home=opt.beamng_path, user=opt.beamng_user_path),
     )
 
     # Sample a single set of parameters
@@ -113,16 +113,5 @@ if __name__ == "__main__":
     # Get the tabulated results
     timeseries_df = full_results.ts_df
 
-    # Check timing - index for df is timestep, and actual time is also available in a column. This is the Python time;
-    # it'll be somewhat variable, but shouldn't be obviously irregular
-    time_diff = np.diff(timeseries_df["time_s"])
-    mean_time_step = np.round(time_diff.mean() * 1000, 2)
-    std_time_step = np.round(time_diff.std() * 1000, 2)
-    time_sample = timeseries_df["time_s"].sample(n=50)
-    plt.scatter(time_sample.index, time_sample)
-    plt.title(f"Time check (mean time step = {mean_time_step} ± {std_time_step} (ms)")
-    plt.xlabel("Time, step")
-    plt.ylabel("Time, s")
-    plt.show()
-
     plot_track(ts_df=timeseries_df)
+    print(f"Lap time: {np.round(results['time_s'],2)}s")

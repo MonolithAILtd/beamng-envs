@@ -1,5 +1,8 @@
-from beamng_envs.envs.base.default_config import DefaultConfig
+from dataclasses import dataclass
+
+from beamng_envs.bng_sim.bng_sim_config import BNGSimConfig
 
 
-class TrackTestConfig(DefaultConfig):
+@dataclass
+class TrackTestConfig(BNGSimConfig):
     output_path: str = "track_test_results"

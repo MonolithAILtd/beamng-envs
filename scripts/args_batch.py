@@ -31,3 +31,9 @@ PARSER_BATCH.add_argument(
     default=200,
     help="The number of tests with randomly selected car setups to run.",
 )
+PARSER_BATCH.add_argument(
+    "--n_jobs",
+    type=int,
+    default=8,
+    help="Number of jobs to use for parallel running.",
+)

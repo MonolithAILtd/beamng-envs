@@ -6,20 +6,20 @@ from gym.spaces import Dict, Text
 
 from beamng_envs.cars.cars_and_configs import CarConfigs
 
-AVAILABLE_PCS = glob.glob('cars_and_configs')
+AVAILABLE_PCS = glob.glob("cars_and_configs")
 
 
 class CrashTestParamSpaceBuilder:
     """
     This param space is dynamic depending on the available car configs.
     """
-    _start_position_key = 'start_position'
-    _speed_key = 'speed_kph'
-    _car_config_name_key = 'car_config_name'
-    _g_force_keys = ['gx', 'gy', 'gz', 'gx2', 'gy2', 'gz2']
+
+    _start_position_key = "start_position"
+    _speed_key = "speed_kph"
+    _car_config_name_key = "car_config_name"
+    _g_force_keys = ["gx", "gy", "gz", "gx2", "gy2", "gz2"]
 
     def __init__(self):
-
         self._fixed_space = {
             self._speed_key: dict(
                 values=(20, 30, 40, 50, 60, 70, 80),
@@ -30,13 +30,13 @@ class CrashTestParamSpaceBuilder:
             ),
             self._start_position_key: dict(
                 values=(
-                    'flat_left',
-                    'flat_mid',
-                    'flat_right',
-                    'raised_bar',
-                    'bollards_left',
-                    'bollards_mid',
-                    'bollards_right'
+                    "flat_left",
+                    "flat_mid",
+                    "flat_right",
+                    "raised_bar",
+                    "bollards_left",
+                    "bollards_mid",
+                    "bollards_right",
                 ),
                 name=self._start_position_key,
                 description="Start position, name",
@@ -65,19 +65,26 @@ class CrashTestParamSpaceBuilder:
             k: Text(
                 min_length=1,
                 max_length=1,
-                charset=[str(val) for val in v['values']],
+                charset=[str(val) for val in v["values"]],
             )
             for k, v in self._fixed_space.items()
         }
-        gym_space.update({
-            self._car_config_name_key: Text(
-                min_length=1,
-                max_length=1,
-                charset=list(self._available_car_configs.keys()))
-        })
+        gym_space.update(
+            {
+                self._car_config_name_key: Text(
+                    min_length=1,
+                    max_length=1,
+                    charset=list(self._available_car_configs.keys()),
+                )
+            }
+        )
         self.param_space_gym = Dict(gym_space)
 
-    def build(self, car_configs: Optional[CarConfigs] = None, beamng_path: Optional[str] = None):
+    def build(
+        self,
+        car_configs: Optional[CarConfigs] = None,
+        beamng_path: Optional[str] = None,
+    ):
         """
         Create the param space from the available car configs.
 
@@ -85,7 +92,9 @@ class CrashTestParamSpaceBuilder:
         """
         if car_configs is None:
             if beamng_path is None:
-                raise ValueError("Either existing CarConfigs or beamng_path is required.")
+                raise ValueError(
+                    "Either existing CarConfigs or beamng_path is required."
+                )
 
             car_configs = CarConfigs.find(beamng_path=beamng_path)
 

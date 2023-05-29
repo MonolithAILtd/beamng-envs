@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
-from beamng_envs.envs.base.default_config import DefaultConfig
+from beamng_envs.bng_sim.bng_sim_config import BNGSimConfig
 
 
 @dataclass
-class DragStripConfig(DefaultConfig):
+class DragStripConfig(BNGSimConfig):
     output_path: str = "drag_strip_results"
     bng_close_on_done: bool = False

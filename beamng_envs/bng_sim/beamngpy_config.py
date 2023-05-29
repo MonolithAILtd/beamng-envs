@@ -3,7 +3,9 @@ from dataclasses import dataclass
 
 
 @dataclass
-class BeamNGConfig:
+class BeamNGPyConfig:
+    """Config class for a beamng.BeamNGPy instance."""
+
     home: str = os.environ.get("BEAMNG_PATH", "/path/to/beamng")
     user: str = os.environ.get("BEAMNG_USER_PATH", "/beamng_workspace/")
     host: str = os.environ.get("BEAMNG_HOST", "localhost")

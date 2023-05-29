@@ -7,7 +7,8 @@ from beamngpy import BeamNGpy
 from tqdm import tqdm
 
 from beamng_envs import __VERSION__
-from beamng_envs.beamng_config import BeamNGConfig
+from beamng_envs.bng_sim.beamngpy_config import BeamNGPyConfig
+
 from beamng_envs.envs.track_test.track_test_config import TrackTestConfig
 from beamng_envs.envs.track_test.track_test_env import TrackTestEnv
 from beamng_envs.envs.track_test.track_test_param_space import (
@@ -25,11 +26,8 @@ if __name__ == "__main__":
     # Prepare config
     track_test_config = TrackTestConfig(
         output_path=opt.output_path,
-        bng_close_on_done=False,
-        bng_config=BeamNGConfig(
-            home=opt.beamng_path,
-            user=opt.beamng_user_path
-        )
+        close_on_done=False,
+        bng_config=BeamNGPyConfig(home=opt.beamng_path, user=opt.beamng_user_path),
     )
 
     # Sample N sets of parameters

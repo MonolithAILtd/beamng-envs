@@ -1,145 +1,122 @@
 import copy
-import time
-from typing import Optional, Dict, Iterable, Any, Tuple, List
+from typing import Optional, Dict, Iterable, Any, Tuple
 
 import numpy as np
-from beamngpy import Scenario, Vehicle, BeamNGpy
+from beamngpy import BeamNGpy
 
+from beamng_envs.bng_sim.bng_sim import BNGSim
 from beamng_envs.data.disk_results import DiskResults
-from beamng_envs.envs.base.env_base import EnvBase
+from beamng_envs.bng_sim.beamngpy_config import BeamNGPyConfig
 from beamng_envs.envs.crash_test.crash_test_config import CrashTestConfig
-
-Y_POS = 114
-Z_POS = 101
-FLAT_X = -268
-WEDGE_X = -224
-BAR_X = -246
-BOLLARDS_X = -286
-FLAT_X = -268
+from beamng_envs.envs.crash_test.crash_test_paradigm import CrashTestParadigm
+from beamng_envs.envs.history import History
+from beamng_envs.interfaces.env import IEnv
 
 
-class CrashTestEnv(EnvBase):
-    _current_step: int
-    _start_positions = {
-        'flat_left': (FLAT_X - 2, Y_POS, Z_POS),
-        'flat_mid': (FLAT_X, Y_POS, Z_POS),
-        'flat_right': (FLAT_X + 2, Y_POS, Z_POS),
-        'raised_bar': (BAR_X, Y_POS, Z_POS),
-        'bollards_left': (BOLLARDS_X + 2, Y_POS, Z_POS),
-        'bollards_mid': (BOLLARDS_X, Y_POS, Z_POS),
-        'bollards_right': (BOLLARDS_X - 2, Y_POS, Z_POS),
-        'wedge': (WEDGE_X, Y_POS, Z_POS)
-    }
-    _rot_quat = (0, 0, -1, 0)
-    _g_force_keys = ['gx', 'gy', 'gz', 'gx2', 'gy2', 'gz2']
+class CrashTestEnv(IEnv):
+    """
+    Crashes a car into a barrier in the Destruction area in gridmap_v2.
+
+    This environment loads a random car templated from those available in the BeamNG installation. These configs
+    are found using beamng_envs.cars.cars_and_configs.CarsAndConfigs. See scripts/run_batch_crash_tests.py for
+    a usage example.
+
+    Note that the configs found attempt to ignore non-car templates, however there are still a few un-drivable objects
+    that slip through - for example, placeholder cars that don't have drive trains. If the car does accelerate down the
+    runway, it's likely it's a fake car.
+
+    TODO: This env sometimes gets stuck on the loading screen after resetting an existing game instance and attempting
+          to reload and start the scenario. This can be avoided by fully restarting the BeamNG game between runs.
+    """
 
     config: CrashTestConfig
 
     def __init__(
-            self,
-            params: Dict[str, Any],
-            config: CrashTestConfig,
-            bng: Optional[BeamNGpy] = None,
+        self,
+        params: Dict[str, Any],
+        config: CrashTestConfig,
+        bng: Optional[BeamNGpy] = None,
     ):
-        super().__init__(params=params, config=config, bng=bng)
-        self._soft_reset()
-
-    def _make_scenario(self):
-        self._scenario = Scenario("gridmap_v2", name="crash_test")
-        car_model = self.params['car_config_name'].split('__')[0]
-        self._vehicle = Vehicle(
-            car_model, model=car_model, licence="MONOLITH"
-        )
-        self._scenario.add_vehicle(
-            self._vehicle,
-            pos=self._start_positions[self.params['start_position']],
-            rot_quat=self._rot_quat,
-        )
-        self._scenario.make(self._bng)
-
-    def _build_path(self, initial_speed_mps: float):
-        """
-        Build straight part to target, timing according to intended speed.
-
-        Timing assume car is roughly at the intended speed at the start of the path.
-
-        :param initial_speed_mps: Initial speed in ms-1.
-        """
-        self._n_nodes = 10
-        path_target_deltas = np.linspace(0, 120, self._n_nodes)
-
-        times = path_target_deltas / initial_speed_mps
-
-        start_x = self._start_positions[self.params['start_position']][0]
-        start_y = self._start_positions[self.params['start_position']][1]
-        self._path_nodes = [
-            {"x": start_x, "y": start_y + y, "z": Z_POS, "t": t}
-            for y, t in zip(path_target_deltas, times)
-        ]
-
-    def _set_vehicle_config(self):
-        parts_config = copy.deepcopy(self.config.car_configs.configs[self.params['car_config_name']])
-        self._vehicle.set_part_config(parts_config)
-        self._parts_actual = self._vehicle.get_part_config()
-        self._attach_sensors()
-        speed_mps = float(self.params['speed_kph']) * 0.27778
-        self._build_path(initial_speed_mps=speed_mps)
-        self._remove_debug_paths()
-        self._add_debug_path(self._path_nodes)
-        self._vehicle.set_velocity(speed_mps)
-        self._vehicle.ai.set_script(self._path_nodes)
+        self.params = params
+        self.config = config
+        self.history = History()
+        self.disk_results = None
+        self._bng_simulation = BNGSim(config=config, bng=bng)
+        self._paradigm: CrashTestParadigm = CrashTestParadigm(params=params)
 
     def step(
-            self, action: Optional[int] = None, **kwargs
+        self, action: Optional[int] = None, **kwargs
     ) -> Tuple[Optional[Any], Optional[float], bool, Dict[str, Any]]:
-        self._check_done()
-        if self._current_step == 0:
-            self._step_zero()
+        """
 
-        self._bng.step(1, wait=True)
-        sensor_data = self._poll_vehicle_sensors()
-        self._current_step += 1
-
-        # Check done - here always end at max steps
-        self.done = self._current_step >= (self.config.max_time * self.config.bng_fps)
-
-        return sensor_data, None, self.done, {}
+        :param action: Action to take on step - ignored in this environment
+        :param kwargs: Other step kwargs.
+        :return: Tuple containing (observation, reward, done, info) (to match OpenAI Gym interface).
+        """
+        return self._paradigm.step(
+            bng_simulation=self._bng_simulation, action=action, **kwargs
+        )
 
     def run(
-            self, modifiers: Optional[Dict[str, Iterable[Any]]] = None
-    ) -> Tuple[Dict[str, Any], Dict[str, List[Any]]]:
-        self._run_to_done()
+        self, modifiers: Optional[Dict[str, Iterable[Any]]] = None
+    ) -> Tuple[Dict[str, Any], History]:
+        self.reset()
+        current_time_s = 0
 
+        if self.done:
+            raise ValueError("Finished, reset before use.")
+
+        while not self.done:
+            obs, _, done, _ = self.step()
+            current_time_s = self._bng_simulation.get_real_time(
+                self._paradigm.current_step
+            )
+            self.history.append(
+                {
+                    self.history.step_key: self._paradigm.current_step,
+                    self.history.time_key: current_time_s,
+                    self.history.car_state_key: obs,
+                }
+            )
+
+            self.done = self._paradigm.done
+
+        self.results[self.history.time_key] = current_time_s
         self.results["parts_requested"] = self.params
-        self.results["parts_actual"] = self._parts_actual
-        self.results["max_damage"] = np.max([v['damage']['damage'] for v in self.history[self._car_state_key]])
+        self.results["parts_actual"] = self._paradigm.vehicle.get_part_config()
+        self.results["max_damage"] = np.max(
+            [v["damage"]["damage"] for v in self.history[self.history.car_state_key]]
+        )
         g_force_maxs = {}
-        for k in self._g_force_keys:
-            g_force_maxs[f"max_abs_{k}"] = np.max(np.abs([t['g_forces'][k] for t in self.history[self._car_state_key]]))
+        for k in self._paradigm.g_force_keys:
+            g_force_maxs[f"max_abs_{k}"] = np.max(
+                np.abs(
+                    [t["g_forces"][k] for t in self.history[self.history.car_state_key]]
+                )
+            )
         self.results.update(g_force_maxs)
 
         config_dict = copy.deepcopy(self.config.__dict__)
-        _ = config_dict.pop('car_configs')
+        _ = config_dict.pop("car_configs")
 
         self.disk_results = DiskResults(
             path=self.config.output_path,
             params=self.params,
             config=config_dict,
-            history=self.history,
-            path_to_bng_logs=self._bng_logs_path,
+            history=self.history.__dict__,
+            path_to_bng_logs=self._bng_simulation.stop_bng_logging_for(
+                self._paradigm.vehicle
+            ),
             results=self.results,
         )
         self.disk_results.save()
+        self._bng_simulation.close()
 
         return self.results, self.history
 
     def reset(self) -> None:
-        self.close()
-        self.launch()
-        self._make_scenario()
-        # There's an issue in this env with reusing BeamNG game - it gets stuck when loading a new scenario after the
-        # first, sleeping here appears to reduce the chance of this happening.
-        time.sleep(1)
-        self._start_scenario()
-        self._set_vehicle_config()
-        self._soft_reset()
+        self.done = False
+        self._bng_simulation.reset()
+        self._paradigm.reset(bng_simulation=self._bng_simulation)
+        self.history.reset()
+        self.results = {}

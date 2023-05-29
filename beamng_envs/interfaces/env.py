@@ -3,7 +3,10 @@ from typing import Dict, Any, Iterable, Tuple, Optional, List
 
 from gym import Space
 
-from beamng_envs.envs.base.default_config import DefaultConfig
+from beamng_envs.bng_sim.bng_sim_config import BNGSimConfig
+from beamng_envs.data.disk_results import DiskResults
+from beamng_envs.envs.history import History
+from beamng_envs.interfaces.paradigm import IParadigm
 
 
 class IEnv(abc.ABC):
@@ -23,23 +26,28 @@ class IEnv(abc.ABC):
                      space.
 
     Instance attributes:
-     - config: A dict containing the static config for the environment, set on init.
+     - config: Config for a BNGSimulation
      - params: A dict The individual set of experimental params currently in use, set on init.
      - history: A dict containing per-step history recorded by the environment (if any).
      - results: A dict containing any summary results available after the environment reaches completion (if any).
      - complete: Bool indicating if the environment has reached a completed state and will not iterate further.
+     - _paradigm: Paradigm defining what the environment does, the car that's used, etc.
     """
 
-    config: DefaultConfig
+    done: bool
+    config: BNGSimConfig
     param_space: Space
     observation_space: Space
     action_space: Optional[Space]
-    history: Dict[str, List[Any]]
+    history: History
     results: Dict[str, Any]
     complete: bool
+    disk_results: Optional[DiskResults]
+
+    _paradigm: IParadigm
 
     @abc.abstractmethod
-    def __init__(self, params: Dict[str, Any], config: DefaultConfig):
+    def __init__(self, params: Dict[str, Any], config: BNGSimConfig):
         """Ready environment for use."""
 
     def step(

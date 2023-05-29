@@ -12,7 +12,7 @@ from typing import Union, Dict, Any, Optional
 import pandas as pd
 
 from beamng_envs import __VERSION__, __BNG_VERSION__
-from beamng_envs.data.nd_array_json_encoder import NDArrayJSONEncoder
+from beamng_envs.data.numpy_json_encoder import NumpyJSONEncoder
 
 
 class DiskResults:
@@ -74,7 +74,7 @@ class DiskResults:
             json.dump(self.config["bng_config"].__dict__, f)
         with open(os.path.join(self.output_path, "params.json"), "w") as f:
             json.dump(
-                obj={k: v for k, v in self.params.items()}, fp=f, cls=NDArrayJSONEncoder
+                obj={k: v for k, v in self.params.items()}, fp=f, cls=NumpyJSONEncoder
             )
         with open(os.path.join(self.output_path, "config.json"), "w") as f:
             json.dump(
@@ -83,7 +83,7 @@ class DiskResults:
 
         # Save results and history
         with open(os.path.join(self.output_path, self._results_fn), "w") as f:
-            json.dump(self.results, f)
+            json.dump(self.results, f, cls=NumpyJSONEncoder)
         with open(os.path.join(self.output_path, self._history_fn), "w") as f:
             json.dump(self.history, f)
 
@@ -144,19 +144,32 @@ class DiskResults:
         return self._scalars_series
 
     def _get_ts_df(self):
+        """
+        Currently supports unpacking history with expected keys and either containing singular values or beamng sensor
+        data (mostly single-nested dicts).
+
+        TODO: Switch to use History() object to more flexibly handle keys and shapes.
+        """
+
         car_state_key = "car_state"
         time_index_key = "time_s"
         main_sensor_keys = self.history[car_state_key][0].keys()
 
         dfs = [pd.DataFrame(self.history[time_index_key], columns=[time_index_key])]
         for sensor in main_sensor_keys:
-            sensor_keys = self.history[car_state_key][0][sensor].keys()
-
-            for sk in sensor_keys:
-                df = pd.DataFrame(
-                    data=[t[sensor][sk] for t in self.history[car_state_key]],
-                )
-                df.columns = [f"{sensor}_{sk}_{c}" for c in df]
+            sensor_data = self.history[car_state_key][0][sensor]
+            if isinstance(sensor_data, dict):
+                # BeamNG sensor nested dict structure - upack to dict to named columns (some deeper nested dicts may
+                # remain)
+                for sk in sensor_data.keys():
+                    df = pd.DataFrame(
+                        data=[t[sensor][sk] for t in self.history[car_state_key]],
+                    )
+                    df.columns = [f"{sensor}_{sk}_{c}" for c in df]
+                    dfs.append(df)
+            else:
+                # Any singular values saved; column named with original name.
+                df = pd.DataFrame(data=[sensor_data], columns=[sensor])
                 dfs.append(df)
 
         return pd.concat(

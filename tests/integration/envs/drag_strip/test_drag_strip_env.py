@@ -4,24 +4,24 @@ from unittest.mock import MagicMock
 import pandas as pd
 
 from beamng_envs.data.disk_results import DiskResults
+from beamng_envs.envs.drag_strip.drag_strip_config import DragStripConfig
+from beamng_envs.envs.drag_strip.drag_strip_env import DragStripEnv
 from beamng_envs.envs.history import History
-from beamng_envs.envs.track_test.track_test_config import TrackTestConfig
-from beamng_envs.envs.track_test.track_test_env import TrackTestEnv
 from tests.common.tidy_test_case import TidyTestCase
 from tests.mocks.mock_beamng_simulation import MockBNGSimulation
 from tests.mocks.mock_vehicle import MockVehicle
 
-PARADIGM_PATH = "beamng_envs.envs.track_test.track_test_paradigm"
+PARADIGM_PATH = "beamng_envs.envs.drag_strip.drag_strip_paradigm"
 
 
-class TestTrackTestEnv(TidyTestCase):
-    _sut_class = TrackTestEnv
+class TestDragStripEnv(TidyTestCase):
+    _sut_class = DragStripEnv
 
     @mock.patch(f"{PARADIGM_PATH}.Vehicle", MockVehicle())
     @mock.patch(f"{PARADIGM_PATH}.Scenario", MagicMock())
     def test_run_to_time_limit_and_load_results(self):
         # Arrange
-        config = TrackTestConfig(output_path=self._tmp_dir.name, fps=20, max_time=10)
+        config = DragStripConfig(output_path=self._tmp_dir.name, fps=20, max_time=10)
         env = self._sut_class(
             params=self._sut_class.param_space.sample(), config=config
         )
