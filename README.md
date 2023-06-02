@@ -30,19 +30,19 @@ Future details on setting up and using BeamNG via its Python API can be found he
 ## Running from Python
 
 ````python
-from beamng_envs.beamng_config import BeamNGConfig
+from beamng_envs.bng_sim.beamngpy_config import BeamNGPyConfig
 from beamng_envs.envs.track_test.track_test_param_space import TRACK_TEST_PARAM_SPACE_GYM
 from beamng_envs.envs.track_test.track_test_env import TrackTestEnv
 from beamng_envs.envs.track_test.track_test_config import TrackTestConfig
 
 # Set paths are required
 track_test_config = TrackTestConfig(
-     output_path='track_test_results',
-     bng_config=BeamNGConfig(
-         home='T:/Program Files (x86)/Steam/steamapps/common/BeamNG.drive',
-         user="C:/beamng_workspace/"
-     )
- )
+    output_path='track_test_results',
+    bng_config=BeamNGPyConfig(
+        home='T:/Program Files (x86)/Steam/steamapps/common/BeamNG.drive',
+        user="C:/beamng_workspace/"
+    )
+)
 param_set = TRACK_TEST_PARAM_SPACE_GYM.sample()
 env = TrackTestEnv(params=param_set, config=track_test_config)
 results, history = env.run()
@@ -52,28 +52,40 @@ results, history = env.run()
 
 There are a number of scripts that demo running an environment and collecting the result to MLflow. The input args are the same for each, and require the BeamNG paths to be set.
 
+The MLflow logging shown in the examples is optional; full results are saved to disk in the output directory in json format.
+
 ### Track Test
-Sets a car config for the Scintila Rally car, use an AI to drive a lap of the track, and record lap time and sensor data.
+![Track test](images/readme_example.gif)  
+Sets a car config for the Scintila Rally car, use an AI to drive a lap of the track, and record lap time and sensor data.  
 
 ```bash
 python -m scripts.run_batch_track_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
 ### Crash test
-Searches for all available car templates, selects one, then drive it into a barrier in the destruction section of grid map v2 at a set speed. Records sensor data.
+![Crash test](images/readme_crash_example.gif)  
+Searches for all available car templates, selects one, then drive it into a barrier in the destruction section of grid map v2 at a set speed. Records sensor data.  
 
 ```bash
 python -m scripts.run_batch_crash_tests -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
 ### Drag strip
-Selects a totally random part config for the Hirochi Sunburst car, then races it down the dragstrip in grid map v2. Records time, speed, etc. along with sensor data.
+![Drag strip](images/readme_drag_example.gif)   
+
+Selects a totally random part config for the Hirochi Sunburst car, then races it down the drag strip in grid map v2. Records time, speed, etc. along with sensor data.    
 
 ```bash
 python -m scripts.run_batch_drag_strip -N 5 --beamng_path /SteamLibrary/steamapps/common/BeamNG.drive --beamng_user_path /beamng_workspace/
 ```
 
-The MLflow logging shown in the examples is optional; full results are saved to disk in the output directory in json format.
+
+## Parallel running
+![Crash test parallel](images/readme_parallel_example.gif)  
+
+It's possible to run environments in multiple BeamNG instances simultaneously. See [run_batch_parallel_crash_tests.py](scripts/run_batch_parallel_crash_tests.py) for an example.
+
+
 
 ### Viewing results
 The `DiskResults` class can be used to load saved results from an environment output folder or from an on disk MLflow experiment. It automates loading the saved json data into Pandas formats.
@@ -115,6 +127,6 @@ The environments here are compatible with the following versions:
 |----------------|------------------|---------------------|------------------------------------|
 | 0.28           | 1.26             | 0.5.0               | Track test, crash test, drag strip |
 | 0.28           | 1.26             | 0.3.0 - 0.4.0       | Track test                         |
-| 0.27           | 1.25.1           | 0.3.0               | Track test                         |
+| 0.27           | 1.25             | 0.3.0               | Track test                         |
 | 0.26           | 1.24             | 0.2.0               | Track test                         |
 | 0.24           | 1.22             | 0.1.0               | Track test                         |

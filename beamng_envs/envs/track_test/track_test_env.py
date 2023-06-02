@@ -87,7 +87,10 @@ class TrackTestEnv(IEnv):
         bng_logs_path = self._bng_simulation.stop_bng_logging_for(
             self._paradigm.vehicle
         )
-        self.results = {self.history.time_key: current_time_s, "finished": True}
+        self.results = {
+            self.history.time_key: current_time_s,
+            "finished": self._paradigm.finished,
+        }
 
         self.disk_results = DiskResults(
             path=self.config.output_path,

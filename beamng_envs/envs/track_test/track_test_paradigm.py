@@ -117,9 +117,9 @@ class TrackTestParadigm(IParadigm):
                 f"{self.current_step} (t={current_time_s}): "
                 f"Within dist thresh of final waypoint, setting done"
             )
-            self.done = True
+            self.finished = True
 
-        self.done = self.done or bng_simulation.check_time_limit(self.current_step)
+        self.done = self.finished or bng_simulation.check_time_limit(self.current_step)
         self.current_step += 1
 
         sensor_data["dist_to_next_waypoint"] = dist
@@ -135,6 +135,7 @@ class TrackTestParadigm(IParadigm):
         self._ready = True
         self.start_scenario(bng_simulation)
         self.done = False
+        self.finished = False
         self.current_step = 0
 
     @staticmethod

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     opt = PARSER_BATCH.parse_args()
 
     # Setup Python logging to include BeamNG console output
-    beamngpy.set_up_simple_logging()
+    # beamngpy.set_up_simple_logging()
 
     # Prepare config
     track_test_config = TrackTestConfig(
@@ -54,6 +54,7 @@ if __name__ == "__main__":
                 params = {k.replace("$", ""): float(v) for k, v in p_set.items()}
                 params.update({"version": __VERSION__})
                 mlflow.log_params(params)
+                results["finished"] = float(results["finished"])
                 mlflow.log_metrics(results)
 
                 # Add a plot of the track

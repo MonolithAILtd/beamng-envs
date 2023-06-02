@@ -104,12 +104,14 @@ class CrashTestParadigm(IParadigm):
         self.current_step += 1
 
         # Check done - here always end at max steps
-        self.done = bng_simulation.check_time_limit(scenario_step=self.current_step)
+        self.finished = bng_simulation.check_time_limit(scenario_step=self.current_step)
+        self.done = self.finished
 
         return sensor_data, None, self.done, {}
 
     def reset(self, bng_simulation: BNGSim):
         self._ready = True
         self.start_scenario(bng_simulation=bng_simulation)
+        self.finished = False
         self.done = False
         self.current_step = 0

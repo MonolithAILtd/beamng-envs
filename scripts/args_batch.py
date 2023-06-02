@@ -22,7 +22,7 @@ PARSER_BATCH.add_argument(
 PARSER_BATCH.add_argument(
     "--output_path",
     type=str,
-    default=f"./crash_test_results_v{__VERSION__}",
+    default=f"./results_v{__VERSION__}",
     help="Output path for results",
 )
 PARSER_BATCH.add_argument(

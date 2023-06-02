@@ -18,6 +18,7 @@ class DragStripParadigm(IParadigm):
     _current_step: int
 
     done: bool
+    finished: bool
     current_step: int
     vehicle: Vehicle
     parts_actual: Dict[str, Any]
@@ -72,10 +73,8 @@ class DragStripParadigm(IParadigm):
         self.current_step += 1
 
         # Check done - finished when x pos is past the node at the end of the drag strip
-        self.done = (
-            bng_simulation.check_time_limit(self.current_step)
-            or sensor_data["state"]["pos"][0] >= self._end_of_ds[0]
-        )
+        self.finished = sensor_data["state"]["pos"][0] >= self._end_of_ds[0]
+        self.done = bng_simulation.check_time_limit(self.current_step) or self.finished
 
         return sensor_data, None, self.done, {}
 
@@ -83,4 +82,5 @@ class DragStripParadigm(IParadigm):
         self._ready = True
         self.start_scenario(bng_simulation)
         self.done = False
+        self.finished = False
         self.current_step = 0

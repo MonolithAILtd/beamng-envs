@@ -6,7 +6,6 @@ from beamngpy import BeamNGpy
 
 from beamng_envs.bng_sim.bng_sim import BNGSim
 from beamng_envs.data.disk_results import DiskResults
-from beamng_envs.bng_sim.beamngpy_config import BeamNGPyConfig
 from beamng_envs.envs.crash_test.crash_test_config import CrashTestConfig
 from beamng_envs.envs.crash_test.crash_test_paradigm import CrashTestParadigm
 from beamng_envs.envs.history import History

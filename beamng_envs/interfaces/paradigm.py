@@ -15,7 +15,8 @@ class IParadigm(abc.ABC):
     Currently, supports single vehicle experiments.
     """
 
-    done: bool
+    done: bool  # Finished lap/run/etc. or time limit reached
+    finished: bool  # Finished lap/run/etc.
     current_step: int
     vehicle: Vehicle
     _scenario: Scenario

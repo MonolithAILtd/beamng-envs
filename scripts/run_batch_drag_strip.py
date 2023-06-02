@@ -6,6 +6,7 @@ import os
 import mlflow
 from beamngpy import BeamNGpy
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 from beamng_envs import __VERSION__
 from beamng_envs.bng_sim.beamngpy_config import BeamNGPyConfig
@@ -23,14 +24,17 @@ if __name__ == "__main__":
             home=opt.beamng_path,
             user=opt.beamng_user_path,
         ),
-        fps=30,
+        fps=20,
         max_time=30,
-        bng_close_on_done=False,
+        close_on_done=False,
         error_on_out_of_time=False,
     )
     bng = BeamNGpy(**config.bng_config.__dict__)
 
-    for run in range(opt.N):
+    # Set up the mlflow experiment
+    mlflow.set_experiment("Drag strip example")
+
+    for run in tqdm(range(opt.N)):
         params = DragStripEnv.param_space.sample()
 
         with mlflow.start_run():
@@ -51,6 +55,11 @@ if __name__ == "__main__":
             plt.close(fig)
 
             # Log to MLflow
-            mlflow.log_params({"version": __VERSION__})
-            mlflow.log_metrics(results)
+            params.update({"version": __VERSION__})
+            # Note here params contains the whole requested part config... This is a lot, it may break
+            # MLflow...
+            mlflow.log_params(params)
+            _ = results.pop("parts_requested")
+            _ = results.pop("parts_actual")
+            mlflow.log_metrics({k: float(v) for k, v in results.items()})
             mlflow.log_artifacts(env.disk_results.output_path)

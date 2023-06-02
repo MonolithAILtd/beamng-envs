@@ -1,3 +1,13 @@
+"""
+Runs a number of crash test experiments in parallel in multiple BeamNG instances.
+
+````
+pip install -r scripts/requirements.txt
+python -m scripts.run_parallel_crash_tests --beamng_path '' --beamng_user_path '' -N 10 --N_JOBS 3
+````
+
+"""
+
 import os
 from typing import Any, Dict
 

@@ -3,11 +3,11 @@ Runs a single track test, plots results.
 
 For running batches of experiments, see scripts/run_batch_track_tests.py
 
-To run, install requirements and call specifying beamng path options (see readme)
+To run, install requirements and call specifying beamng_path options (see readme)
 
 ````
 pip install -r scripts/requirements.txt
-python -m scripts run_single_track_test --beamng_path '' --beamng_user_path ''
+python -m scripts.run_single_track_test --beamng_path '' --beamng_user_path ''
 ````
 
 """
@@ -87,10 +87,10 @@ if __name__ == "__main__":
     opt = PARSER_BATCH.parse_args()
 
     # Setup Python logging to include BeamNG console output
-    beamngpy.set_up_simple_logging()
+    # beamngpy.set_up_simple_logging()
 
     # Prepare config
-    # The BeamngConfig can be specified here, and will be used to create a game instance if the env isn't passed an
+    # The BeamNGConfig can be specified here, and will be used to create a game instance if the env isn't passed an
     # existing one.
     track_test_config = TrackTestConfig(
         close_on_done=True,

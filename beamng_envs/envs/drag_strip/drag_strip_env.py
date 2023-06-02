@@ -75,6 +75,7 @@ class DragStripEnv(IEnv):
 
             self.done = self._paradigm.done
 
+        self.results["finished"] = self._paradigm.finished
         self.results["parts_requested"] = dict(self.params)
         self.results["parts_actual"] = dict(self._paradigm.vehicle.get_part_config())
         self.results[self.history.time_key] = current_time_s
