@@ -121,7 +121,7 @@ class CarConfigs:
 
         except SyntaxError as e2:
             if verbose:
-                warnings.warn(f"Failed to parse {path} due to {e1} then {e2}.")
+                warnings.warn(f"Failed to parse {path} due to {e2}.")
 
             return {}, False
 
@@ -173,7 +173,3 @@ class CarConfigs:
         print(
             f"Successfully converted {success}/{found} of the found .pc files to .json."
         )
-
-
-if __name__ == "__main__":
-    cc = CarConfigs.find(beamng_path="T:/SteamLibrary/steamapps/common/BeamNG.drive/")
