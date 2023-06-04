@@ -4,8 +4,11 @@ coverage-reports/
 mlruns/
 outputs/
 log.txt
-track_test_results/
-
+*results*/
+cars_and_configs/
+datasets/
+*.mp4
+*.stg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
