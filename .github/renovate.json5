@@ -1,0 +1,3 @@
+{
+  "extends": ["github>MonolithAILtd/renovate-config"]
+}
